@@ -1,0 +1,19 @@
+:root {
+    --r-main-font-size: #{$base-font-size} !important;
+}
+
+.reveal-full-page .reveal-viewport .reveal {
+    blockquote {
+        width: 90%;
+        padding: 10px 30px;
+        border-radius: 10px;
+    }
+    
+    #title-slide h1.title {
+        text-shadow: #{$text-shadow};
+    }
+
+    #research-plan, #progress {
+        text-shadow: #{$text-shadow};
+    }
+}

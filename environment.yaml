@@ -1,0 +1,9 @@
+name: report
+channels: # these will define where conda searches for the packages
+  - conda-forge # conda-forge should basically always be in this list
+  - defaults # defaults too, obviously
+dependencies: # outline all of your packages here
+  - pandoc=2.17.1.1
+  - pandoc-crossref=0.3.12.2
+  - livereload
+  - libsass
