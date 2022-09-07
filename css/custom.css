@@ -1,0 +1,64 @@
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, embed,
+figure, figcaption, footer, header, hgroup,
+menu, nav, output, ruby, section, summary,
+time, mark, audio, video {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-size: 100%;
+  font: inherit;
+  vertical-align: baseline; }
+
+article, aside, details, figcaption, figure,
+footer, header, hgroup, menu, nav, section {
+  display: block; }
+
+body {
+  line-height: 1; }
+
+ol, ul {
+  list-style: none; }
+
+blockquote, q {
+  quotes: none; }
+
+blockquote:before, blockquote:after,
+q:before, q:after {
+  content: '';
+  content: none; }
+
+table {
+  border-collapse: collapse;
+  border-spacing: 0; }
+
+:root {
+  --r-main-font-size: 32px !important; }
+
+.reveal-full-page .reveal-viewport .reveal blockquote {
+  width: 90%;
+  padding: 10px 30px;
+  border-radius: 10px; }
+
+.reveal-full-page .reveal-viewport .reveal #title-slide h1.title {
+  text-shadow: -2px 1px 10px #12181b; }
+
+.reveal-full-page .reveal-viewport .reveal #research-plan, .reveal-full-page .reveal-viewport .reveal #progress {
+  text-shadow: -2px 1px 10px #12181b; }
+
+.reveal-full-page .reveal-viewport .reveal figure {
+  font-size: 1.5rem;
+  background-color: #ffffffa3;
+  color: black;
+  border-radius: 10px; }
+
+.reveal-full-page .reveal-viewport .reveal table {
+  font-size: 1.5rem; }

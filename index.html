@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="pandoc">
+  <meta name="author" content="Jacan Chaplais">
+  <meta name="author" content="Srinandan Dasmahapatra">
+  <meta name="author" content="Stefano Moretti">
+  <title>Particle collisions as graphs: machine learning from data and topology</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+  <link rel="stylesheet" href="js/vendor/reveal.js/dist/reset.css">
+  <link rel="stylesheet" href="js/vendor/reveal.js/dist/reveal.css">
+  <style>
+    .reveal .sourceCode {  /* see #7635 */
+      overflow: visible;
+    }
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    span.underline{text-decoration: underline;}
+    div.column{display: inline-block; vertical-align: top; width: 50%;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+  </style>
+  <link rel="stylesheet" href="js/vendor/reveal.js/dist/theme/black.css" id="theme">
+  <link rel="stylesheet" href="css/custom.css"/>
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides">
+
+<section id="title-slide" data-background-image="img/bg/henrik-donnestad.jpg" data-background-opacity="0.3">
+  <h1 class="title">Particle collisions as graphs: machine learning from
+data and topology</h1>
+  <p class="author">Jacan Chaplais</p>
+  <p class="author">Srinandan Dasmahapatra</p>
+  <p class="author">Stefano Moretti</p>
+  <p class="date">Wednesday, 7th September 2022</p>
+</section>
+
+<section>
+<section id="why-graphs" class="title-slide slide level1"
+data-background-image="img/bg/pawel-czerwinski_7.jpg"
+data-background-opacity="0.5">
+<h1 data-background-image="img/bg/pawel-czerwinski_7.jpg"
+data-background-opacity="0.5">Why graphs?</h1>
+<p>Introduction to graph structured data and analysis.</p>
+</section>
+<section id="graph-definition" class="slide level2"
+data-background-image="img/bg/pawel-czerwinski_7.jpg"
+data-background-opacity="0.5">
+<h2 data-background-image="img/bg/pawel-czerwinski_7.jpg"
+data-background-opacity="0.5">Graph definition</h2>
+<p>Graphs are minimally comprised of two pieces of information:</p>
+<ol type="1">
+<li>Set of data points, known as <em>nodes</em> or <em>vertices</em>
+<span class="math inline">\(V\)</span></li>
+<li>Set of relations between points, known as <em>links</em> or
+<em>edges</em> <span class="math inline">\(E\)</span></li>
+</ol>
+<p><span id="eq:graph_def"><span class="math display">\[
+G = \left( V, E, u \right) \text{ or } G\left( V, E, u \right)
+\qquad(1)\]</span></span></p>
+<p>Edges between nodes can be described by an adjacency matrix, <span
+id="eq:adj_def"><span class="math display">\[
+A_{ij} = \begin{cases}
+1 &amp; \exists \; v_j \in \mathcal{N}(v_i)
+\\
+0 &amp; \text{else}
+\end{cases}
+\qquad(2)\]</span></span> where <span
+class="math inline">\(\mathcal{N}(v_i)\)</span> is the neighbourhood of
+node <span class="math inline">\(v_i\)</span>. The adjacency matrix is
+therefore a sparse binary matrix of order <span
+class="math inline">\(|V| \times |V|\)</span>.</p>
+</section>
+<section id="images-are-graphs" class="slide level2"
+data-background-image="img/bg/pawel-czerwinski_7.jpg"
+data-background-opacity="0.5">
+<h2 data-background-image="img/bg/pawel-czerwinski_7.jpg"
+data-background-opacity="0.5">Images are graphs</h2>
+<div class="columns">
+<div class="column" style="width:55%;">
+<iframe width="500px" height="500px" src="img/fig/img-graph.html" frameborder="0" allowfullscreen>
+</iframe>
+</div><div class="column" style="width:45%;">
+<figure>
+<img data-src="img/fig/conv-anim.gif"
+alt="Image convolution operation." />
+<figcaption aria-hidden="true">Image convolution operation.</figcaption>
+</figure>
+</div>
+</div>
+</section>
+<section id="generalising-the-update" class="slide level2"
+data-background-image="img/bg/pawel-czerwinski_7.jpg"
+data-background-opacity="0.5">
+<h2 data-background-image="img/bg/pawel-czerwinski_7.jpg"
+data-background-opacity="0.5">Generalising the update</h2>
+<div class="columns">
+<div class="column" style="width:55%;">
+<iframe width="500px" height="500px" src="img/fig/graph.html" frameborder="0" allowfullscreen>
+</iframe>
+</div><div class="column" style="width:45%;">
+<figure>
+<img data-src="img/fig/comp_graph.svg"
+alt="Each node has bespoke computation. Applies order invariant agg func over neighbours, then embeds with update func." />
+<figcaption aria-hidden="true">Each node has bespoke computation.
+Applies order invariant <code>agg</code> func over neighbours, then
+embeds with <code>update</code> func.</figcaption>
+</figure>
+</div>
+</div>
+</section>
+<section id="edges-are-powerful" class="slide level2"
+data-background-image="img/bg/pawel-czerwinski_7.jpg"
+data-background-opacity="0.5">
+<h2 data-background-image="img/bg/pawel-czerwinski_7.jpg"
+data-background-opacity="0.5">Edges are powerful</h2>
+<p>Edges can do more than just hold parametrised weights: they can model
+pairwise relations. These can be embedded, just like the nodes.</p>
+<p><span id="eq:edge_embed"><span class="math display">\[
+\mathbf{e}^{(l)}_{s r} = \operatorname{ACT}(\mathbf{W}_e^{(l)} \cdot [
+\mathbf{v}_r^{(l - 1)}
+|| \mathbf{v}_s^{(l - 1)}
+|| \mathbf{e}_{s r}^{(l - 1)}
+])
+\qquad(3)\]</span></span></p>
+<p>The learned edge features can then be aggregated to form
+<em>messages</em>, to update the nodes.</p>
+<p><span id="eq:node_embed"><span class="math display">\[
+\mathbf{v}_r^{(l)} = \operatorname{ACT}(\mathbf{W}_v^{(l)} \cdot
+[ \mathbf{v}_r^{(l - 1)}
+|| \operatorname{AGG}(
+\{\mathbf{e}_{s r}^{(l)}, \forall v_s \in \mathcal{N}(v_r)\})
+])
+\qquad(4)\]</span></span></p>
+</section></section>
+<section>
+<section id="collider-data-as-a-graph" class="title-slide slide level1"
+data-background-image="img/bg/pawel-czerwinski_8.jpg"
+data-background-opacity="0.2">
+<h1 data-background-image="img/bg/pawel-czerwinski_8.jpg"
+data-background-opacity="0.2">Collider data as a graph</h1>
+<p>Using graphs to formulate the physics problem.</p>
+</section>
+<section id="interactions-during-decay" class="slide level2"
+data-background-image="img/bg/pawel-czerwinski_8.jpg"
+data-background-opacity="0.2">
+<h2 data-background-image="img/bg/pawel-czerwinski_8.jpg"
+data-background-opacity="0.2">Interactions during decay</h2>
+<div class="columns">
+<div class="column" style="width:45%;">
+<figure>
+<img data-src="img/fig/parton-top-decay-2.png"
+alt="A top and anti-top pair produced by a proton collision. These decay into a bottom and anti-bottom pair, and W bosons, which themselves continue decaying through a process called showering and hadronisation, until detected." />
+<figcaption aria-hidden="true">A top and anti-top pair produced by a
+proton collision. These decay into a bottom and anti-bottom pair, and W
+bosons, which themselves continue decaying through a process called
+showering and hadronisation, until detected.</figcaption>
+</figure>
+</div><div class="column" style="width:50%;">
+<iframe scrolling="no" width="100%" height="500px" src="img/fig/tt_bb_.html" frameborder="0" allowfullscreen>
+</iframe>
+</div>
+</div>
+</section>
+<section id="data-incident-on-the-detector" class="slide level2"
+data-background-image="img/bg/pawel-czerwinski_8.jpg"
+data-background-opacity="0.2">
+<h2 data-background-image="img/bg/pawel-czerwinski_8.jpg"
+data-background-opacity="0.2">Data incident on the detector</h2>
+<iframe scrolling="no" width="100%" height="500px" src="img/fig/scatter.html" frameborder="0" allowfullscreen>
+</iframe>
+</section>
+<section id="flow-tracing" class="slide level2"
+data-background-image="img/bg/pawel-czerwinski_8.jpg"
+data-background-opacity="0.2">
+<h2 data-background-image="img/bg/pawel-czerwinski_8.jpg"
+data-background-opacity="0.2">Flow tracing</h2>
+<div class="columns">
+<div class="column" style="width:35%;">
+<figure>
+<img data-src="img/fig/flow_calc.svg"
+alt="Flow tracing diffuses quantities among descendants proportionally." />
+<figcaption aria-hidden="true">Flow tracing diffuses quantities among
+descendants proportionally.</figcaption>
+</figure>
+</div><div class="column" style="width:60%;">
+<iframe scrolling="no" width="100%" height="500px" src="img/fig/t.html" frameborder="0" allowfullscreen>
+</iframe>
+</div>
+</div>
+</section></section>
+<section>
+<section id="learning-flow-tracing-with-gnns"
+class="title-slide slide level1"
+data-background-image="img/bg/jason-leung_3.jpg"
+data-background-opacity="0.35">
+<h1 data-background-image="img/bg/jason-leung_3.jpg"
+data-background-opacity="0.35">Learning flow tracing with GNNs</h1>
+
+</section>
+<section id="message-passing" class="slide level2"
+data-background-image="img/bg/jason-leung_3.jpg"
+data-background-opacity="0.35">
+<h2 data-background-image="img/bg/jason-leung_3.jpg"
+data-background-opacity="0.35">Message passing</h2>
+<p>Feature vectors are made up of 4-momenta and charge,</p>
+<p><span id="eq:node_feats"><span class="math display">\[
+\mathbf{v}^i = \begin{bmatrix}E^i &amp; p_x^i &amp; p_y^i &amp; p_z^i
+&amp; Q^i\end{bmatrix}^T
+\qquad(5)\]</span></span></p>
+<p>and edges are formed within a radius of <span
+class="math inline">\(\Delta R = R_0\)</span></p>
+<p><span id="eq:connectivity"><span class="math display">\[
+A_{ij} = \begin{cases}
+1 &amp; \Delta R_{i j} &lt; R_0
+\\
+0 &amp; \text{else}
+\end{cases}
+\qquad(6)\]</span></span></p>
+<p>Message passing is used to create embeddings of nodes based on
+community structure, and regression is used to predict flow tracing of
+particles from ancestors.</p>
+</section>
+<section id="results" class="slide level2"
+data-background-image="img/bg/jason-leung_3.jpg"
+data-background-opacity="0.35">
+<h2 data-background-image="img/bg/jason-leung_3.jpg"
+data-background-opacity="0.35">Results</h2>
+<div class="tenor-gif-embed" data-postid="15372563"
+data-share-method="host" data-aspect-ratio="1.77778" data-width="100%">
+<a href="https://tenor.com/view/tumbleweed-silence-no-answer-anyone-there-echo-gif-15372563">Tumbleweed
+Silence GIF</a>from
+<a href="https://tenor.com/search/tumbleweed-gifs">Tumbleweed GIFs</a>
+</div>
+<script type="text/javascript" async src="https://tenor.com/embed.js"></script>
+</section></section>
+<section id="references" class="title-slide slide level1 unnumbered">
+<h1 class="unnumbered">References</h1>
+
+</section>
+    </div>
+  </div>
+
+  <script src="js/vendor/reveal.js/dist/reveal.js"></script>
+
+  <!-- reveal.js plugins -->
+  <script src="js/vendor/reveal.js/plugin/notes/notes.js"></script>
+  <script src="js/vendor/reveal.js/plugin/search/search.js"></script>
+  <script src="js/vendor/reveal.js/plugin/zoom/zoom.js"></script>
+  <script src="js/vendor/reveal.js/plugin/math/math.js"></script>
+
+  <script>
+
+      // Full list of configuration options available at:
+      // https://revealjs.com/config/
+      Reveal.initialize({
+        // Display controls in the bottom right corner
+        controls: true,
+
+        // Help the user learn the controls by providing hints, for example by
+        // bouncing the down arrow when they first encounter a vertical slide
+        controlsTutorial: true,
+
+        // Determines where controls appear, "edges" or "bottom-right"
+        controlsLayout: 'bottom-right',
+
+        // Visibility rule for backwards navigation arrows; "faded", "hidden"
+        // or "visible"
+        controlsBackArrows: 'faded',
+
+        // Display a presentation progress bar
+        progress: true,
+
+        // Display the page number of the current slide
+        slideNumber: 1,
+
+        // 'all', 'print', or 'speaker'
+        showSlideNumber: 'all',
+
+        // Add the current slide number to the URL hash so that reloading the
+        // page/copying the URL will return you to the same slide
+        hash: true,
+
+        // Start with 1 for the hash rather than 0
+        hashOneBasedIndex: false,
+
+        // Flags if we should monitor the hash and change slides accordingly
+        respondToHashChanges: true,
+
+        // Push each slide change to the browser history
+        history: false,
+
+        // Enable keyboard shortcuts for navigation
+        keyboard: true,
+
+        // Enable the slide overview mode
+        overview: true,
+
+        // Disables the default reveal.js slide layout (scaling and centering)
+        // so that you can use custom CSS layout
+        disableLayout: false,
+
+        // Vertical centering of slides
+        center: true,
+
+        // Enables touch navigation on devices with touch input
+        touch: true,
+
+        // Loop the presentation
+        loop: false,
+
+        // Change the presentation direction to be RTL
+        rtl: false,
+
+        // see https://revealjs.com/vertical-slides/#navigation-mode
+        navigationMode: 'default',
+
+        // Randomizes the order of slides each time the presentation loads
+        shuffle: false,
+
+        // Turns fragments on and off globally
+        fragments: true,
+
+        // Flags whether to include the current fragment in the URL,
+        // so that reloading brings you to the same fragment position
+        fragmentInURL: true,
+
+        // Flags if the presentation is running in an embedded mode,
+        // i.e. contained within a limited portion of the screen
+        embedded: false,
+
+        // Flags if we should show a help overlay when the questionmark
+        // key is pressed
+        help: true,
+
+        // Flags if it should be possible to pause the presentation (blackout)
+        pause: true,
+
+        // Flags if speaker notes should be visible to all viewers
+        showNotes: false,
+
+        // Global override for autoplaying embedded media (null/true/false)
+        autoPlayMedia: null,
+
+        // Global override for preloading lazy-loaded iframes (null/true/false)
+        preloadIframes: null,
+
+        // Number of milliseconds between automatically proceeding to the
+        // next slide, disabled when set to 0, this value can be overwritten
+        // by using a data-autoslide attribute on your slides
+        autoSlide: 0,
+
+        // Stop auto-sliding after user input
+        autoSlideStoppable: true,
+
+        // Use this method for navigation when auto-sliding
+        autoSlideMethod: null,
+
+        // Specify the average time in seconds that you think you will spend
+        // presenting each slide. This is used to show a pacing timer in the
+        // speaker view
+        defaultTiming: null,
+
+        // Enable slide navigation via mouse wheel
+        mouseWheel: false,
+
+        // The display mode that will be used to show slides
+        display: 'block',
+
+        // Hide cursor if inactive
+        hideInactiveCursor: true,
+
+        // Time before the cursor is hidden (in ms)
+        hideCursorTime: 5000,
+
+        // Opens links in an iframe preview overlay
+        previewLinks: false,
+
+        // Transition style (none/fade/slide/convex/concave/zoom)
+        transition: 'convex',
+
+        // Transition speed (default/fast/slow)
+        transitionSpeed: 'slow',
+
+        // Transition style for full page slide backgrounds
+        // (none/fade/slide/convex/concave/zoom)
+        backgroundTransition: 'fade',
+
+        // Number of slides away from the current that are visible
+        viewDistance: 3,
+
+        // Number of slides away from the current that are visible on mobile
+        // devices. It is advisable to set this to a lower number than
+        // viewDistance in order to save resources.
+        mobileViewDistance: 2,
+
+        math: {
+          mathjax: 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js',
+          config: 'TeX-AMS_HTML-full',
+          tex2jax: {
+            inlineMath: [['\\(','\\)']],
+            displayMath: [['\\[','\\]']],
+            balanceBraces: true,
+            processEscapes: false,
+            processRefs: true,
+            processEnvironments: true,
+            preview: 'TeX',
+            skipTags: ['script','noscript','style','textarea','pre','code'],
+            ignoreClass: 'tex2jax_ignore',
+            processClass: 'tex2jax_process'
+          },
+        },
+
+        // reveal.js plugins
+        plugins: [
+          RevealMath,
+          RevealNotes,
+          RevealSearch,
+          RevealZoom
+        ]
+      });
+    </script>
+    </body>
+</html>
